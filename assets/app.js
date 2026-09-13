@@ -391,15 +391,12 @@ function renderVelocity() {
     (state.ptype !== 'all' ? ' · ' + DATA.metro.property_type_splits[state.ptype] : '');
 }
 
-/* ---------- rolling windows ---------- */
+/* ---------- recent sales (honest, non-overlapping windows only) ----------
+   Each Redfin weekly row is a ROLLING 4-week window, so rows must never be
+   summed or relabeled as 7/14/28-day counts. We show each window as published. */
 function renderRolling() {
   const wk = weeklySeries();
-  const n = wk.length;
-  const w7 = wk[n - 1];
-  const w14 = wk.slice(n - 2).reduce((a, r) => a + (r.homes_sold || 0), 0);
-  const w28 = wk.slice(n - 4).reduce((a, r) => a + (r.homes_sold || 0), 0);
-  const w28prev = wk.slice(n - 8, n - 4).reduce((a, r) => a + (r.homes_sold || 0), 0);
-  const chg28 = pctChange(w28, w28prev);
+  const wLast = wk[wk.length - 1];
 
   const metro = metroSeries();
   const mLast = metro[metro.length - 1];
@@ -407,20 +404,24 @@ function renderRolling() {
   const chgM = pctChange(mLast.homes_sold, mPrev.homes_sold);
 
   const cards = [
-    { label: 'Sold, last 7 days', value: fmtInt(w7.homes_sold), sub: 'week ending ' + prettyWeek(w7.week_ending) },
-    { label: 'Sold, last 14 days', value: fmtInt(w14), sub: '2-week sum, metro' },
-    { label: 'Sold, last 28 days', value: fmtInt(w28),
-      sub: '<span class="' + dirClass(chg28) + '">' + fmtSignedPct(chg28) + '</span> vs prior 28d (' + fmtInt(w28prev) + ')' },
+    { label: 'Sold, 4 wks ending ' + prettyWeek(wLast.week_ending), value: fmtInt(wLast.homes_sold),
+      sub: '<span class="' + dirClass(wLast.homes_sold_yoy) + '">' + fmtSignedPct(wLast.homes_sold_yoy) +
+        '</span> vs same 4 wks last yr · San Jose metro' },
     { label: 'Sold, ' + prettyMonth(mLast.date), value: fmtInt(mLast.homes_sold),
-      sub: '<span class="' + dirClass(chgM) + '">' + fmtSignedPct(chgM) + '</span> vs ' + prettyMonth(mPrev.date) }
+      sub: '<span class="' + dirClass(chgM) + '">' + fmtSignedPct(chgM) + '</span> vs ' +
+        prettyMonth(mPrev.date) + ' · San Jose metro' },
+    { label: 'Median sale price, 4 wks ending ' + prettyWeek(wLast.week_ending),
+      value: fmtMoney(wLast.median_sale_price), sub: 'San Jose metro · 4-wk rolling' }
   ];
   document.getElementById('rollGrid').innerHTML = cards.map(c =>
     '<div class="roll"><div class="r-label">' + c.label + '</div><div class="r-value">' + c.value +
     '</div><div class="r-sub">' + c.sub + '</div></div>'
   ).join('');
   document.getElementById('vintageRoll').textContent =
-    'Rolling: Redfin weekly (4-week rolling), metro, through week ending ' + prettyWeek(w7.week_ending) +
-    ' · Monthly: Redfin monthly, metro, through ' + prettyMonth(mLast.date);
+    'Redfin Housing Market Tracker, San Jose-Sunnyvale-Santa Clara metro: ' +
+    'weekly 4-week rolling through week ending ' + prettyWeek(wLast.week_ending) +
+    ' · monthly through ' + prettyMonth(mLast.date) +
+    '. ZIP-level sold counts are not published by any free source; metro is the finest fresh geography available.';
 }
 
 /* ---------- seasonality ---------- */
