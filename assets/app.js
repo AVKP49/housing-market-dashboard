@@ -118,6 +118,8 @@ function setAreaLabel() {
     'ZIP ' + state.zip + ' &middot; ' + m.city + ', ' + m.county + ' County';
 }
 async function onLookup() {
+  const box = document.getElementById('addrSuggest');
+  if (!box.hidden && suggestItems.length) { pickSuggest(suggestActive >= 0 ? suggestActive : 0); return; }
   hideSuggest();
   const input = document.getElementById('addrInput').value;
   const err = document.getElementById('zipError');
@@ -141,11 +143,11 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 function suggestLabel(p) {
-  const bits = [p.name || ''];
-  const loc = [p.city || p.locality, p.state].filter(Boolean).join(', ');
-  if (loc) bits.push(loc);
-  if (p.postcode) bits.push(p.postcode);
-  return bits.filter(Boolean).join(' — ');
+  const street = [p.housenumber, p.street].filter(Boolean).join(' ');
+  const primary = street || p.name || '';
+  const region = [p.city || p.locality, p.state].filter(Boolean).join(', ');
+  const tail = [region, p.postcode].filter(Boolean).join(' ');
+  return [primary, tail].filter(Boolean).join(', ');
 }
 function hideSuggest() {
   const box = document.getElementById('addrSuggest');
@@ -166,9 +168,10 @@ function renderSuggest(items) {
   if (!items.length) { hideSuggest(); return; }
   box.innerHTML = items.map((it, i) => {
     const p = it.properties || {};
+    const street = [p.housenumber, p.street].filter(Boolean).join(' ');
     const sub = [p.city || p.locality, p.postcode].filter(Boolean).join(' · ');
     return '<div class="suggest-item" role="option" data-i="' + i + '">' +
-      '<div class="s-name">' + escapeHtml(p.name || '') + '</div>' +
+      '<div class="s-name">' + escapeHtml(street || p.name || '') + '</div>' +
       (sub ? '<div class="s-sub">' + escapeHtml(sub) + '</div>' : '') +
       '</div>';
   }).join('');
