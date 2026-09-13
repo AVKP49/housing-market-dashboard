@@ -31,6 +31,18 @@ body {
   border-radius: 6px; font-size: 0.9rem; cursor: pointer; align-self: flex-start;
 }
 .lookup button:hover { filter: brightness(1.1); }
+.typeahead { position: relative; }
+.typeahead input { width: 320px; max-width: 100%; }
+.suggest {
+  position: absolute; top: calc(100% + 4px); left: 0; width: 340px; max-width: 92vw;
+  background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 50; overflow: hidden;
+}
+.suggest-item { padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.suggest-item:last-child { border-bottom: none; }
+.suggest-item:hover, .suggest-item.active { background: #1c2128; }
+.suggest-item .s-name { color: var(--text); font-size: 0.9rem; }
+.suggest-item .s-sub { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
 .error { color: var(--red); font-size: 0.85rem; }
 .area-label { color: var(--muted); font-size: 0.85rem; }
 main { max-width: 1200px; margin: 0 auto; padding: 20px 16px 40px; }

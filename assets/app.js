@@ -118,6 +118,7 @@ function setAreaLabel() {
     'ZIP ' + state.zip + ' &middot; ' + m.city + ', ' + m.county + ' County';
 }
 async function onLookup() {
+  hideSuggest();
   const input = document.getElementById('addrInput').value;
   const err = document.getElementById('zipError');
   err.hidden = true;
@@ -129,6 +130,104 @@ async function onLookup() {
   } catch (e) {
     err.textContent = e.message;
     err.hidden = false;
+  }
+}
+
+/* ---------- type-ahead suggestions (Photon, OSM-based) ---------- */
+const PHOTON_BBOX = '-123.2,36.9,-121.2,38.2'; // Bay Area bias: min_lon,min_lat,max_lon,max_lat
+let suggestTimer = null, suggestItems = [], suggestActive = -1, suggestSeq = 0;
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function suggestLabel(p) {
+  const bits = [p.name || ''];
+  const loc = [p.city || p.locality, p.state].filter(Boolean).join(', ');
+  if (loc) bits.push(loc);
+  if (p.postcode) bits.push(p.postcode);
+  return bits.filter(Boolean).join(' — ');
+}
+function hideSuggest() {
+  const box = document.getElementById('addrSuggest');
+  box.hidden = true;
+  box.innerHTML = '';
+  document.getElementById('addrInput').setAttribute('aria-expanded', 'false');
+  suggestItems = [];
+  suggestActive = -1;
+}
+function paintSuggestActive() {
+  document.querySelectorAll('#addrSuggest .suggest-item').forEach((el, i) =>
+    el.classList.toggle('active', i === suggestActive));
+}
+function renderSuggest(items) {
+  const box = document.getElementById('addrSuggest');
+  suggestItems = items;
+  suggestActive = -1;
+  if (!items.length) { hideSuggest(); return; }
+  box.innerHTML = items.map((it, i) => {
+    const p = it.properties || {};
+    const sub = [p.city || p.locality, p.postcode].filter(Boolean).join(' · ');
+    return '<div class="suggest-item" role="option" data-i="' + i + '">' +
+      '<div class="s-name">' + escapeHtml(p.name || '') + '</div>' +
+      (sub ? '<div class="s-sub">' + escapeHtml(sub) + '</div>' : '') +
+      '</div>';
+  }).join('');
+  box.hidden = false;
+  document.getElementById('addrInput').setAttribute('aria-expanded', 'true');
+  box.querySelectorAll('.suggest-item').forEach(el => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); pickSuggest(parseInt(el.dataset.i, 10)); });
+  });
+}
+async function fetchSuggest(q) {
+  const seq = ++suggestSeq;
+  try {
+    const url = 'https://photon.komoot.io/api/?q=' + encodeURIComponent(q) + '&limit=6&bbox=' + PHOTON_BBOX;
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (seq !== suggestSeq) return; // a newer keystroke already fired
+    const feats = (data.features || []).filter(f => f.properties && (f.properties.postcode || f.properties.city || f.properties.name));
+    renderSuggest(feats);
+  } catch (e) { /* suggestion failure stays silent; full lookup still works */ }
+}
+function onAddrInput() {
+  const v = document.getElementById('addrInput').value;
+  clearTimeout(suggestTimer);
+  const t = v.trim();
+  if (t.length < 3 || /^\d{5}$/.test(t)) { hideSuggest(); return; }
+  suggestTimer = setTimeout(() => fetchSuggest(t), 300);
+}
+async function pickSuggest(i) {
+  const it = suggestItems[i];
+  hideSuggest();
+  if (!it) return;
+  const p = it.properties || {};
+  document.getElementById('addrInput').value = suggestLabel(p);
+  const z = (p.postcode || '').slice(0, 5);
+  if (/^\d{5}$/.test(z) && DATA.zips[z]) {
+    state.zip = z;
+    setAreaLabel();
+    renderAll();
+  } else {
+    onLookup(); // no usable postcode on the pick; fall back to full resolve
+  }
+}
+function onAddrKey(e) {
+  const box = document.getElementById('addrSuggest');
+  if (box.hidden) return; // the plain Enter handler below takes it
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    suggestActive = suggestItems.length ? (suggestActive + 1) % suggestItems.length : -1;
+    paintSuggestActive();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    suggestActive = suggestItems.length ? (suggestActive - 1 + suggestItems.length) % suggestItems.length : -1;
+    paintSuggestActive();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (suggestActive >= 0) pickSuggest(suggestActive); else onLookup();
+  } else if (e.key === 'Escape') {
+    hideSuggest();
   }
 }
 
@@ -546,8 +645,13 @@ function wireControls() {
     document.querySelectorAll('#corrMetric button').forEach(x => x.classList.remove('active'));
     b.classList.add('active'); state.corrMetric = b.dataset.corr; renderCorrelation();
   }));
-  document.getElementById('addrBtn').addEventListener('click', onLookup);
-  document.getElementById('addrInput').addEventListener('keydown', e => { if (e.key === 'Enter') onLookup(); });
+  document.getElementById('addrBtn').addEventListener('click', () => { hideSuggest(); onLookup(); });
+  document.getElementById('addrInput').addEventListener('input', onAddrInput);
+  document.getElementById('addrInput').addEventListener('keydown', onAddrKey);
+  document.getElementById('addrInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('addrSuggest').hidden) onLookup();
+  });
+  document.getElementById('addrInput').addEventListener('blur', () => setTimeout(hideSuggest, 150));
 }
 
 function renderAll() {

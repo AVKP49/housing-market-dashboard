@@ -14,7 +14,10 @@
     <p class="tagline">Bay Area home values, selling speed &amp; mortgage rates &mdash; stock-tracker style</p>
   </div>
   <div class="lookup">
-    <input id="addrInput" type="text" placeholder="Enter address or ZIP (e.g. 260 Bieber Dr, San Jose)" autocomplete="off">
+    <div class="typeahead">
+      <input id="addrInput" type="text" placeholder="Enter address or ZIP (e.g. 260 Bieber Dr, San Jose)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="addrSuggest">
+      <div id="addrSuggest" class="suggest" role="listbox" hidden></div>
+    </div>
     <button id="addrBtn">Look up</button>
     <div id="zipError" class="error" hidden></div>
     <div id="areaLabel" class="area-label">ZIP 95123 &middot; San Jose, Santa Clara County</div>
