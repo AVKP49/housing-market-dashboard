@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Housing Market Tracker</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <h1>Housing Market Tracker</h1>
+    <p class="tagline">Bay Area home values, selling speed &amp; mortgage rates &mdash; stock-tracker style</p>
+  </div>
+  <div class="lookup">
+    <input id="addrInput" type="text" placeholder="Enter address or ZIP (e.g. 260 Bieber Dr, San Jose)" autocomplete="off">
+    <button id="addrBtn">Look up</button>
+    <div id="zipError" class="error" hidden></div>
+    <div id="areaLabel" class="area-label">ZIP 95123 &middot; San Jose, Santa Clara County</div>
+  </div>
+</header>
+
+<main>
+  <!-- KPI TICKER -->
+  <section class="card">
+    <div class="kpi-row" id="kpiRow"></div>
+    <div class="vintage" id="vintageKpi"></div>
+  </section>
+
+  <!-- PRICE CHART -->
+  <section class="card">
+    <div class="section-head">
+      <h2>Home value trend</h2>
+      <div class="controls">
+        <div class="btn-group" id="priceRange">
+          <button data-range="1Y">1Y</button>
+          <button data-range="3Y">3Y</button>
+          <button data-range="5Y" class="active">5Y</button>
+          <button data-range="10Y">10Y</button>
+          <button data-range="MAX">Max</button>
+        </div>
+        <div class="btn-group" id="priceMetric">
+          <button data-metric="value" class="active">Value</button>
+          <button data-metric="yoy">YoY %</button>
+          <button data-metric="mom">MoM %</button>
+        </div>
+        <label class="check"><input type="checkbox" id="rateOverlay"> Mortgage rate overlay</label>
+      </div>
+    </div>
+    <div class="chart-wrap tall"><canvas id="priceChart"></canvas></div>
+    <div class="vintage" id="vintagePrice"></div>
+  </section>
+
+  <!-- VELOCITY -->
+  <section class="card">
+    <div class="section-head">
+      <h2>Market velocity <span class="scope">San Jose metro</span></h2>
+      <div class="btn-group" id="ptypeToggle">
+        <button data-ptype="all" class="active">All types</button>
+        <button data-ptype="sf">Single family</button>
+        <button data-ptype="condo">Condo</button>
+        <button data-ptype="th">Townhouse</button>
+      </div>
+    </div>
+    <div class="mini-grid">
+      <div class="mini"><h3>Homes sold / month</h3><canvas id="velSold"></canvas></div>
+      <div class="mini"><h3>Median days on market</h3><canvas id="velDom"></canvas></div>
+      <div class="mini"><h3>Sale-to-list ratio</h3><canvas id="velStl"></canvas></div>
+      <div class="mini"><h3>% sold above list</h3><canvas id="velAbove"></canvas></div>
+      <div class="mini"><h3>% off market in 2 weeks</h3><canvas id="velOff2wk"></canvas></div>
+    </div>
+    <div class="vintage" id="vintageVel"></div>
+  </section>
+
+  <!-- ROLLING WINDOWS -->
+  <section class="card">
+    <div class="section-head"><h2>Recent sales activity <span class="scope">San Jose metro</span></h2></div>
+    <div class="roll-grid" id="rollGrid"></div>
+    <div class="vintage" id="vintageRoll"></div>
+  </section>
+
+  <!-- SEASONALITY -->
+  <section class="card">
+    <div class="section-head"><h2>Seasonality <span class="scope">San Jose metro &middot; 2018&ndash;2025 avg</span></h2></div>
+    <div class="seas-layout">
+      <div class="chart-wrap"><canvas id="seasChart"></canvas></div>
+      <div class="seas-lists">
+        <div><h3>Best months to sell</h3><ol id="bestSell"></ol></div>
+        <div><h3>Best months to buy</h3><ol id="bestBuy"></ol></div>
+      </div>
+    </div>
+    <div class="vintage" id="vintageSeas"></div>
+  </section>
+
+  <!-- SENTIMENT -->
+  <section class="card">
+    <div class="section-head"><h2>Buyer vs seller sentiment <span class="scope">San Jose metro</span></h2></div>
+    <div class="gauge-layout">
+      <div class="chart-wrap gauge"><canvas id="gaugeChart"></canvas><div id="gaugeLabel" class="gauge-label"></div></div>
+      <div class="gauge-parts" id="gaugeParts"></div>
+    </div>
+    <div class="vintage" id="vintageSent"></div>
+  </section>
+
+  <!-- CORRELATION -->
+  <section class="card">
+    <div class="section-head">
+      <h2>Mortgage rate correlation <span class="scope">national rate vs San Jose metro</span></h2>
+      <div class="controls">
+        <div class="btn-group" id="corrRange">
+          <button data-range="3Y">3Y</button>
+          <button data-range="5Y">5Y</button>
+          <button data-range="10Y" class="active">10Y</button>
+          <button data-range="MAX">Max</button>
+        </div>
+        <div class="btn-group" id="corrMetric">
+          <button data-corr="sold" class="active">Homes sold</button>
+          <button data-corr="zhvi_yoy">ZIP price YoY %</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrap tall"><canvas id="corrChart"></canvas></div>
+    <div class="corr-stat" id="corrStat"></div>
+    <div class="vintage" id="vintageCorr"></div>
+  </section>
+
+  <footer class="card sources">
+    <h2>Data sources</h2>
+    <ul id="sourceList"></ul>
+    <p class="note">Granularity: home values at ZIP level (Zillow ZHVI); selling speed, counts &amp; sentiment at San Jose metro level (Redfin); mortgage rates national (FRED). This dashboard refreshes whenever the underlying sources publish new data.</p>
+  </footer>
+</main>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

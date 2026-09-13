@@ -1,0 +1,90 @@
+{
+ "sources": {
+  "zips": {
+   "name": "Zillow ZHVI (zip, all tiers, smoothed, SA)",
+   "url": "https://files.zillowstatic.com/research/public_csvs/zhvi/Zip_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv",
+   "accessed": "2026-09-13"
+  },
+  "metro": {
+   "name": "Redfin Housing Market Tracker, monthly metro",
+   "url": "https://redfin-public-data.s3.us-west-2.amazonaws.com/redfin_data_center/housing_market/monthly/all_metros.csv",
+   "accessed": "2026-09-13"
+  },
+  "weekly": {
+   "name": "Redfin Housing Market Tracker, 4-week rolling metro",
+   "url": "https://redfin-public-data.s3.us-west-2.amazonaws.com/redfin_data_center/housing_market/weekly/all_metros.csv",
+   "accessed": "2026-09-13"
+  },
+  "property_types": {
+   "name": "Redfin Housing Market Tracker by Property Type, monthly metro",
+   "url": "https://redfin-public-data.s3.us-west-2.amazonaws.com/redfin_data_center/property_types/monthly/all_metros.csv",
+   "accessed": "2026-09-13"
+  },
+  "price_drops": {
+   "name": "Redfin Price Drops, monthly + weekly metro (top 50)",
+   "url": "https://redfin-public-data.s3.us-west-2.amazonaws.com/redfin_data_center/price_drops/monthly/top_50_metros.csv",
+   "accessed": "2026-09-13"
+  },
+  "balance_of_power": {
+   "name": "Redfin Balance of Power: Buyers and Sellers, monthly metro (top 50)",
+   "url": "https://redfin-public-data.s3.us-west-2.amazonaws.com/redfin_data_center/buyers_and_sellers/monthly/top_50_metros.csv",
+   "accessed": "2026-09-13"
+  },
+  "rates": {
+   "name": "FRED 30-Yr Fixed Rate Mortgage Average in the US (MORTGAGE30US), weekly -> monthly mean",
+   "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=MORTGAGE30US",
+   "accessed": "2026-09-13"
+  },
+  "national_sales": {
+   "name": "Redfin Housing Market Tracker, monthly country (US)",
+   "url": "https://redfin-public-data.s3.us-west-2.amazonaws.com/redfin_data_center/housing_market/monthly/country.csv",
+   "accessed": "2026-09-13",
+   "note": "Substituted for FRED EXHOSLUSM495S, whose keyless CSV returned only 13 months"
+  },
+  "case_shiller": {
+   "name": "FRED S&P/Case-Shiller US National Home Price Index (CSUSHPINSA)",
+   "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CSUSHPINSA",
+   "accessed": "2026-09-13"
+  }
+ },
+ "zip_count": 274,
+ "zip_counties": [
+  "Santa Clara",
+  "San Mateo",
+  "Alameda",
+  "Contra Costa",
+  "San Francisco",
+  "Marin",
+  "Sonoma",
+  "Napa",
+  "Solano"
+ ],
+ "market": "San Jose-Sunnyvale-Santa Clara, CA",
+ "date_range": {
+  "zips": [
+   "2000-01-31",
+   "2026-07-31"
+  ],
+  "metro": [
+   "2012-01-31",
+   "2026-08-31"
+  ],
+  "weekly": [
+   "2019-04-21",
+   "2026-09-06"
+  ],
+  "rates": [
+   "1971-04-30",
+   "2026-09-30"
+  ],
+  "national_sales": [
+   "2012-01-31",
+   "2026-08-31"
+  ],
+  "case_shiller": [
+   "1987-01-01",
+   "2026-06-01"
+  ]
+ },
+ "granularity_notes": "prices zip-level (Zillow ZHVI, all home tiers, smoothed SA); velocity metro-level (Redfin San Jose metro); buyer/seller balance metro-level monthly (Redfin top-50); rates national (FRED); weekly metrics are rolling 4-week periods"
+}
